@@ -1,2 +1,3 @@
-# lootoclast
-Yet another Destiny companion app!
+# Destiny tools for the gDestiny community
+
+More coming soon!
