@@ -1,0 +1,6 @@
+name: gdestiny-clan-inspector
+version: 0.0.1
+description: Manage the roster of a Bungie clan.
+dependencies:
+  args: any
+  http: any
