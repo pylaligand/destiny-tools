@@ -1,0 +1,6 @@
+name: gdestiny-gplus
+version: 0.0.1
+description: Utilities to interact with Google Plus.
+dependencies:
+  args: any
+  http: any
