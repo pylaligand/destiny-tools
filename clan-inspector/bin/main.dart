@@ -46,7 +46,7 @@ bool _extractMembers(var data, List<_Member> roster, bool isXbox) {
   return roster.length < int.parse(total);
 }
 
-/// Adds a Destiny-spcific id to the given user.
+/// Adds a Destiny-specific id to the given user.
 _addMembershipId(_Member member) async {
   var url = 'http://www.bungie.net/Platform/User/GetBungieAccount/${member.bungieId}/254/';
   var data = await _doGet(url);
@@ -57,26 +57,30 @@ _addMembershipId(_Member member) async {
   }
 }
 
-/// Adds the last date of activity to the given member.
-_addLastActiveDate(_Member member, isXbox) async {
+/// Adds some Destiny data to the given member.
+_addDestinyData(_Member member, isXbox) async {
   // Note: specifiying the platform type does not seem to matter, a result is
   // always returned for a valid membership id.
   var type = isXbox ? 'TigerXbox' : 'TigerPSN';
   var url = 'http://www.bungie.net/Platform/Destiny/${type}/Account/${member.destinyId}/';
-  var data = await _doGet(url);
-  var characters = data['Response']['data']['characters'];
+  var data = (await _doGet(url))['Response']['data'];
+
+  // Last played date.
+  var characters = data['characters'];
   var playTime = characters.fold(new DateTime(1900), (time, character) {
     var lastPlayTime = DateTime.parse(character['characterBase']['dateLastPlayed']);
     return lastPlayTime.compareTo(time) > 0 ? lastPlayTime : time;
   });
   member.activeTime = playTime;
+
+  member.grimoireScore = data['grimoireScore'];
 }
 
 /// Adds Destiny-related activity data to the given member.
 _addActivityData(_Member member, isXbox) async {
   await _addMembershipId(member);
   if (member.playsDestiny) {
-    await _addLastActiveDate(member, isXbox);
+    await _addDestinyData(member, isXbox);
   }
 }
 
@@ -106,6 +110,7 @@ class _Member {
 
   int _membershipId;
   DateTime _lastActiveDate;
+  int _grimoireScore;
 
   _Member(this._username, String memberId, this._consoleName, DateTime approvalDate) :
       _bungieId = int.parse(memberId),
@@ -131,6 +136,9 @@ class _Member {
   /// Returns the last date the member was active in Destiny.
   DateTime get activeTime => _lastActiveDate;
            set activeTime(DateTime time) => _lastActiveDate = time.toLocal();
+  /// Returns the user's grimoire score.
+  int get grimoireScore => _grimoireScore;
+      set grimoireScore(int score) => _grimoireScore = score;
 }
 
 main(List<String> args) async {
@@ -170,16 +178,15 @@ main(List<String> args) async {
             return a.approvalTime.compareTo(b.approvalTime);
           }
       }
-
   });
 
   // Print the results in a table format.
-  final headers = 'Bungie username\t${isXbox ? 'XBL' : 'PSN'} username\tApproval day\tLast active day';
+  final headers = 'Bungie username\t${isXbox ? 'XBL' : 'PSN'} username\tApproval day\tLast active day\tGrimoire';
   print(headers);
   roster.forEach((member) {
     var activeDay = member.activeTime != null ? _stringify(member.activeTime) : '?';
     var approvalDay = _stringify(member.approvalTime);
-    print('${member.userName}\t${member.consoleName}\t${approvalDay}\t${activeDay}');
+    print('${member.userName}\t${member.consoleName}\t${approvalDay}\t${activeDay}\t${member.grimoireScore}');
   });
   print(headers);
   print('Found ${roster.length} users.');
