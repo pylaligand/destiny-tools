@@ -1,3 +1,3 @@
-# Tools for the gDestiny community
+# Destiny tools
 
-More coming soon!
+[Game Info](http://www.bungie.net)
