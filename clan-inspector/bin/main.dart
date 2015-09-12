@@ -6,6 +6,8 @@ import 'dart:convert';
 import 'package:args/args.dart';
 import 'package:http/http.dart' as http;
 
+import 'data.dart';
+
 const OPTION_PLATFORM = 'platform';
 const VALUE_XBL = 'xbl';
 const VALUE_PSN = 'psn';
@@ -13,10 +15,10 @@ const OPTION_CLAN_ID = 'clan_id';
 const FLAG_HELP = 'help';
 
 /// Retrieves the roster for the given clan on the given platform.
-Future<List<_Member>> _getClanRoster(int clanId, bool isXbox) async {
+Future<List<Member>> _getClanRoster(int clanId, bool isXbox) async {
   final platform = isXbox ? 1 : 2;
   int pageIndex = 1;
-  final List<_Member> roster = new List();
+  final List<Member> roster = new List();
   while (true) {
     var url = 'http://www.bungie.net/Platform/Group/${clanId}/Members/?lc=en&fmt=true&currentPage=${pageIndex}&platformType=${platform}';
     var data = await _doGet(url);
@@ -31,7 +33,7 @@ Future<List<_Member>> _getClanRoster(int clanId, bool isXbox) async {
 
 /// Extracts the users from the given data.
 /// Returns |true| if more users are available.
-bool _extractMembers(var data, List<_Member> roster, bool isXbox) {
+bool _extractMembers(var data, List<Member> roster, bool isXbox) {
   data['Response']['results'].forEach((user) {
     var userData = user['user'];
     var username = userData['displayName'];
@@ -39,49 +41,70 @@ bool _extractMembers(var data, List<_Member> roster, bool isXbox) {
     var consoleKey = isXbox ? 'xboxDisplayName' : 'psnDisplayName';
     var consoleName = userData[consoleKey];
     var approvalDate = DateTime.parse(user['approvalDate']);
-    var member = new _Member(username, memberId, consoleName, approvalDate);
+    var member = new Member(username, memberId, consoleName, approvalDate);
     roster.add(member);
   });
   var total = data['Response']['totalResults'];
   return roster.length < int.parse(total);
 }
 
-/// Adds a Destiny-specific id to the given user.
-_addMembershipId(_Member member) async {
+/// Gathers some data from the Destiny account of the given user, if applicable.
+_addDestinyData(Member member) async {
   var url = 'http://www.bungie.net/Platform/User/GetBungieAccount/${member.bungieId}/254/';
   var data = await _doGet(url);
-  var hasAccount = data['Response']['destinyAccounts'].length > 0;
-  if (hasAccount) {
-    var id = data['Response']['destinyAccounts'][0]['userInfo']['membershipId'];
-    member.destinyId = int.parse(id);
+  var accounts = data['Response']['destinyAccounts'];
+  if (accounts.isEmpty) {
+    return;
   }
-}
+  var account = accounts[0];
+  var id = account['userInfo']['membershipId'];
+  member.destinyId = int.parse(id);
 
-/// Adds some Destiny data to the given member.
-_addDestinyData(_Member member, isXbox) async {
-  // Note: specifiying the platform type does not seem to matter, a result is
-  // always returned for a valid membership id.
-  var type = isXbox ? 'TigerXbox' : 'TigerPSN';
-  var url = 'http://www.bungie.net/Platform/Destiny/${type}/Account/${member.destinyId}/';
-  var data = (await _doGet(url))['Response']['data'];
+  var characters = account['characters'];
 
   // Last played date.
-  var characters = data['characters'];
   var playTime = characters.fold(new DateTime(1900), (time, character) {
-    var lastPlayTime = DateTime.parse(character['characterBase']['dateLastPlayed']);
+    var lastPlayTime = DateTime.parse(character['dateLastPlayed']);
     return lastPlayTime.compareTo(time) > 0 ? lastPlayTime : time;
   });
   member.activeTime = playTime;
 
-  member.grimoireScore = data['grimoireScore'];
+  // Grimoire.
+  member.grimoireScore = account['grimoireScore'];
+
+  /// Characters.
+  characters.forEach((character) {
+    CharacterClass clazz =
+        _classFromType(character['characterClass']['classType']);
+    Race race = _raceFromType(character['race']['raceType']);
+    int level = character['level'];
+    int light = character['powerLevel'];
+    member.characters.add(new Character(clazz, race, level, light));
+  });
+}
+ /// Creates a character class from its integer representation.
+CharacterClass _classFromType(int type) {
+  switch (type) {
+    case 0: return CharacterClass.titan;
+    case 1: return CharacterClass.hunter;
+    case 2: return CharacterClass.warlock;
+    default: throw new ArgumentError.value(type, 'class');
+  }
+}
+
+/// Creates a race from its integer representation.
+Race _raceFromType(int type) {
+  switch (type) {
+    case 0: return Race.human;
+    case 1: return Race.awoken;
+    case 2: return Race.exo;
+    default: throw new ArgumentError.value(type, 'race');
+  }
 }
 
 /// Adds Destiny-related activity data to the given member.
-_addActivityData(_Member member, isXbox) async {
-  await _addMembershipId(member);
-  if (member.playsDestiny) {
-    await _addDestinyData(member, isXbox);
-  }
+_addActivityData(Member member, isXbox) async {
+  await _addDestinyData(member);
 }
 
 /// Executes an HTTP GET query and returns the response's body as parsed JSON.
@@ -100,47 +123,6 @@ _stringify(DateTime time) {
       ..toString();
 }
 
-/// Represents a clan member.
-class _Member {
-
-  final String _username;
-  final int _bungieId;
-  final String _consoleName;
-  final DateTime _approvalDate;
-
-  int _membershipId;
-  DateTime _lastActiveDate;
-  int _grimoireScore;
-
-  _Member(this._username, String memberId, this._consoleName, DateTime approvalDate) :
-      _bungieId = int.parse(memberId),
-      _approvalDate = approvalDate.toLocal(),
-      _membershipId = -1;
-
-  toString() => '${_username}\t[${_consoleName}]\t[${_membershipId}]\t[${_approvalDate}]\t[${_lastActiveDate}]';
-
-  /// Returns the member's Bungie username.
-  String get userName => _username;
-  /// Returns the username of the member on their gaming platform, or |?| if not
-  /// available.
-  String get consoleName => _consoleName != null ? _consoleName : '?';
-  /// Returns the date when the member was added to the clan.
-  DateTime get approvalTime => _approvalDate;
-  /// Returns the member's Bungie id.
-  num get bungieId => _bungieId;
-  /// Returns the member's Destiny id.
-  num get destinyId => _membershipId;
-      set destinyId(num id) => _membershipId = id;
-  /// Returns |true| if the member has a known Destiny id.
-  bool get playsDestiny => _membershipId > 0;
-  /// Returns the last date the member was active in Destiny.
-  DateTime get activeTime => _lastActiveDate;
-           set activeTime(DateTime time) => _lastActiveDate = time.toLocal();
-  /// Returns the user's grimoire score.
-  int get grimoireScore => _grimoireScore;
-      set grimoireScore(int score) => _grimoireScore = score;
-}
-
 main(List<String> args) async {
   final parser = new ArgParser()
       ..addOption(OPTION_PLATFORM, allowed: [VALUE_XBL, VALUE_PSN], abbr: 'p')
@@ -157,7 +139,7 @@ main(List<String> args) async {
   final clanId = int.parse(params[OPTION_CLAN_ID]);
 
   print('Fetching the list...');
-  List<_Member> roster = await _getClanRoster(clanId, isXbox);
+  List<Member> roster = await _getClanRoster(clanId, isXbox);
   var tasks = [];
   roster.forEach((member) => tasks.add(_addActivityData(member, isXbox)));
   await Future.wait(tasks);
@@ -184,9 +166,11 @@ main(List<String> args) async {
   final headers = 'Bungie username\t${isXbox ? 'XBL' : 'PSN'} username\tApproval day\tLast active day\tGrimoire';
   print(headers);
   roster.forEach((member) {
-    var activeDay = member.activeTime != null ? _stringify(member.activeTime) : '?';
+    var activeDay = member.activeTime != null
+        ? _stringify(member.activeTime)
+        : '?';
     var approvalDay = _stringify(member.approvalTime);
-    print('${member.userName}\t${member.consoleName}\t${approvalDay}\t${activeDay}\t${member.grimoireScore}');
+    print('${member.userName}\t${member.consoleName}\t${approvalDay}\t${activeDay}\t${member.grimoireScore}\t${member.characters.length}');
   });
   print(headers);
   print('Found ${roster.length} users.');
