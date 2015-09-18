@@ -15,6 +15,7 @@ const GPLUS_REQUESTS_PER_SECOND = 5;
 const OPTION_COMMUNITY_PAGE = 'community_page';
 const OPTION_API_KEY = 'api_key';
 const OPTION_MAX_USERS = 'max_users';
+const OPTION_OUTPUT_FILE = 'output';
 const FLAG_HELP = 'help';
 
 /// Extracts the G+ ids in the give page.
@@ -54,6 +55,7 @@ main(List<String> args) async {
       ..addOption(OPTION_COMMUNITY_PAGE, abbr: 'c')
       ..addOption(OPTION_API_KEY, abbr: 'a')
       ..addOption(OPTION_MAX_USERS, abbr: 'm', defaultsTo: '0')
+      ..addOption(OPTION_OUTPUT_FILE, abbr: 'o')
       ..addFlag(FLAG_HELP, negatable: false, abbr: 'h');
   var params = parser.parse(args);
   if (params[FLAG_HELP] ||
@@ -90,7 +92,12 @@ main(List<String> args) async {
   }
   stdout.writeln();
 
+  var output = stdout;
+  if (params.options.contains(OPTION_OUTPUT_FILE)) {
+    output = new File(params[OPTION_OUTPUT_FILE]).openWrite();
+  }
   users.forEach((user) {
-    print(user);
+    output.writeln(user);
   });
+  output.close();
 }
