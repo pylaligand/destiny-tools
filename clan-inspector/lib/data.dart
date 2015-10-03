@@ -1,5 +1,7 @@
 // Copyright (c) 2015 P.Y. Laligand
 
+part of clan;
+
 /// Represents a clan member.
 class Member {
 
