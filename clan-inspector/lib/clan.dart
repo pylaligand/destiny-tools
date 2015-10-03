@@ -1,28 +1,24 @@
 // Copyright (c) 2015 P.Y. Laligand
 
+library clan;
+
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:args/args.dart';
 import 'package:http/http.dart' as http;
 
-import 'data.dart';
-
-const OPTION_PLATFORM = 'platform';
-const VALUE_XBL = 'xbl';
-const VALUE_PSN = 'psn';
-const OPTION_CLAN_ID = 'clan_id';
-const FLAG_HELP = 'help';
+part 'data.dart';
 
 /// Retrieves the roster for the given clan on the given platform.
-Future<List<Member>> _getClanRoster(int clanId, bool isXbox) async {
-  final platform = isXbox ? 1 : 2;
+Future<List<Member>> _getClanRoster(
+    int clanId, String apiKey, bool forXbox) async {
+  final platform = forXbox ? 1 : 2;
   int pageIndex = 1;
   final List<Member> roster = new List();
   while (true) {
     var url = 'http://www.bungie.net/Platform/Group/${clanId}/Members/?lc=en&fmt=true&currentPage=${pageIndex}&platformType=${platform}';
-    var data = await _doGet(url);
-    if (_extractMembers(data, roster, isXbox)) {
+    var data = await _doGet(url, apiKey);
+    if (_extractMembers(data, roster, forXbox)) {
       pageIndex++;
     } else {
       break;
@@ -33,12 +29,12 @@ Future<List<Member>> _getClanRoster(int clanId, bool isXbox) async {
 
 /// Extracts the users from the given data.
 /// Returns |true| if more users are available.
-bool _extractMembers(var data, List<Member> roster, bool isXbox) {
+bool _extractMembers(var data, List<Member> roster, bool forXbox) {
   data['Response']['results'].forEach((user) {
     var userData = user['user'];
     var username = userData['displayName'];
     var memberId = userData['membershipId'];
-    var consoleKey = isXbox ? 'xboxDisplayName' : 'psnDisplayName';
+    var consoleKey = forXbox ? 'xboxDisplayName' : 'psnDisplayName';
     var consoleName = userData[consoleKey];
     var approvalDate = DateTime.parse(user['approvalDate']);
     var member = new Member(username, memberId, consoleName, approvalDate);
@@ -49,9 +45,9 @@ bool _extractMembers(var data, List<Member> roster, bool isXbox) {
 }
 
 /// Gathers some data from the Destiny account of the given user, if applicable.
-_addDestinyData(Member member) async {
+_addDestinyData(Member member, String apiKey) async {
   var url = 'http://www.bungie.net/Platform/User/GetBungieAccount/${member.bungieId}/254/';
-  var data = await _doGet(url);
+  var data = await _doGet(url, apiKey);
   var accounts = data['Response']['destinyAccounts'];
   if (accounts.isEmpty) {
     return;
@@ -103,76 +99,22 @@ Race _raceFromType(int type) {
 }
 
 /// Adds Destiny-related activity data to the given member.
-_addActivityData(Member member, isXbox) async {
-  await _addDestinyData(member);
+_addActivityData(Member member, String apiKey, forXbox) async {
+  await _addDestinyData(member, apiKey);
 }
 
 /// Executes an HTTP GET query and returns the response's body as parsed JSON.
-_doGet(String url) async {
-  return JSON.decode((await http.get(url)).body);
+_doGet(String url, String apiKey) async {
+  var response = await http.get(url, headers: {'X-API-Key': apiKey});
+  return JSON.decode(response.body);
 }
 
-/// Prints a string representing the given time.
-_stringify(DateTime time) {
-  return new StringBuffer()
-      ..write(time.month)
-      ..write('/')
-      ..write(time.day)
-      ..write('/')
-      ..write(time.year)
-      ..toString();
-}
-
-main(List<String> args) async {
-  final parser = new ArgParser()
-      ..addOption(OPTION_PLATFORM, allowed: [VALUE_XBL, VALUE_PSN], abbr: 'p')
-      ..addOption(OPTION_CLAN_ID, abbr: 'c')
-      ..addFlag(FLAG_HELP, negatable: false, abbr: 'h');
-  var params = parser.parse(args);
-  if (params[FLAG_HELP] ||
-      !params.options.contains(OPTION_PLATFORM)) {
-    print(parser.usage);
-    return;
-  }
-
-  final isXbox = params[OPTION_PLATFORM] == VALUE_XBL;
-  final clanId = int.parse(params[OPTION_CLAN_ID]);
-
-  print('Fetching the list...');
-  List<Member> roster = await _getClanRoster(clanId, isXbox);
+Future<List<Member>> getClan(int clanId, String apiKey, bool forXbox) async {
+  List<Member> roster = await _getClanRoster(clanId, apiKey, forXbox);
   var tasks = [];
-  roster.forEach((member) => tasks.add(_addActivityData(member, isXbox)));
-  await Future.wait(tasks);
-  // Sort the roster.
-  // 1- no Destiny info, sorted by approval date.
-  // 2- Destiny info, sorted by last played date.
-  roster.sort((a, b) {
-      if (a.playsDestiny) {
-        if (b.playsDestiny) {
-          return a.activeTime.compareTo(b.activeTime);
-        } else {
-          return 1;
-        }
-      } else {
-          if (b.playsDestiny) {
-            return -1;
-          } else {
-            return a.approvalTime.compareTo(b.approvalTime);
-          }
-      }
-  });
-
-  // Print the results in a table format.
-  final headers = 'Bungie username\t${isXbox ? 'XBL' : 'PSN'} username\tApproval day\tLast active day\tGrimoire';
-  print(headers);
   roster.forEach((member) {
-    var activeDay = member.activeTime != null
-        ? _stringify(member.activeTime)
-        : '?';
-    var approvalDay = _stringify(member.approvalTime);
-    print('${member.userName}\t${member.consoleName}\t${approvalDay}\t${activeDay}\t${member.grimoireScore}\t${member.characters.length}');
+    tasks.add(_addActivityData(member, apiKey, forXbox));
   });
-  print(headers);
-  print('Found ${roster.length} users.');
-  print('All done!');
+  await Future.wait(tasks);
+  return roster;
 }
