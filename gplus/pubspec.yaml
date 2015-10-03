@@ -1,4 +1,4 @@
-name: gdestiny-gplus
+name: destiny-gplus
 version: 0.0.1
 description: Utilities to interact with Google Plus.
 dependencies:

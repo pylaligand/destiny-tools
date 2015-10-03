@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 
-import 'package:gdestiny-gplus/gplus.dart';
+import 'package:destiny-gplus/gplus.dart';
 
 const OPTION_COMMUNITY_PAGE = 'community_page';
 const OPTION_API_KEY = 'api_key';
