@@ -2,6 +2,7 @@ name: destiny-db
 version: 0.0.1
 description: Simple Destiny user database backed by a Google Drive file.
 dependencies:
+  args: any
   collection: any
   googleapis: any
   googleapis_auth: any

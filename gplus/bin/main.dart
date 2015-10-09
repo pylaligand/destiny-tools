@@ -4,7 +4,6 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:args/args.dart';
-
 import 'package:destiny-gplus/gplus.dart';
 
 const OPTION_COMMUNITY_PAGE = 'community_page';
