@@ -3,7 +3,6 @@
 import 'dart:async';
 
 import 'package:args/args.dart';
-
 import 'package:destiny-clan/clan.dart';
 
 const OPTION_PLATFORM = 'platform';
