@@ -47,6 +47,10 @@ class Database {
     result = 37 * result + users.fold(0, (hash, user) => hash + user.hashCode);
     return result;
   }
+
+  @override String toString() {
+    return new JsonEncoder.withIndent('  ').convert(toJson());
+  }
 }
 
 /// Represents a user.

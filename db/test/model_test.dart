@@ -16,7 +16,6 @@ main() {
   var sameDb = new Database.withContent(timestamp, users);
   var differentDb = new Database.withContent(timestamp, [user]);
 
-
   test('user equality', () {
     expect(sameUser, equals(user));
     expect(sameUser.hashCode, equals(user.hashCode));
