@@ -38,7 +38,7 @@ main(List<String> args) async {
   }
 
   final forXbox = params[OPTION_PLATFORM] == VALUE_XBL;
-  final clanId = int.parse(params[OPTION_CLAN_ID]);
+  final clanId = params[OPTION_CLAN_ID];
   final apiKey = params[OPTION_API_KEY];
 
   print('Fetching the list...');
