@@ -1,4 +1,4 @@
- // Copyright (c) 2015 P.Y. Laligand
+// Copyright (c) 2015 P.Y. Laligand
 
 import 'dart:async';
 
