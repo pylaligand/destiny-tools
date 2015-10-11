@@ -1,6 +1,6 @@
-name: destiny-db
+name: destiny-common
 version: 0.0.1
-description: Simple Destiny user database backed by a Google Drive file.
+description: Common utilities for Destiny-related scripts.
 dependencies:
   args: any
   collection: any

@@ -3,7 +3,7 @@
 import 'dart:async';
 
 import 'package:args/args.dart';
-import 'package:destiny-db/db.dart';
+import 'package:destiny-common/db.dart';
 
 const OPTION_CLIENT_ID = 'client_id';
 const OPTION_CLIENT_SECRET = 'client_secret';

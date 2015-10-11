@@ -2,7 +2,7 @@
 
 library db_test;
 
-import 'package:destiny-db/db.dart';
+import 'package:destiny-common/db.dart';
 import 'package:test/test.dart';
 
 main() {
