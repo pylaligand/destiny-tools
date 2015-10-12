@@ -1,16 +1,21 @@
 // Copyright (c) 2015 P.Y. Laligand
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:http/http.dart' as http;
-
+import 'package:destiny-common/bungie.dart';
+import 'package:destiny-common/db.dart';
 import 'package:destiny-gplus/gplus.dart';
 
-const OPTION_MAPPINGS = 'mappings';
+const OPTION_XBL_MAPPINGS = 'xbl_mappings';
+const OPTION_PSN_MAPPINGS = 'psn_mappings';
 const OPTION_COMMUNITY_PAGE = 'community_page';
-const OPTION_API_KEY = 'api_key';
+const OPTION_GPLUS_API_KEY = 'gplus_api_key';
+const OPTION_DRIVE_ID = 'drive_id';
+const OPTION_DRIVE_SECRET = 'drive_secret';
+const OPTION_BUNGIE_API_KEY = 'bungie_api_key';
 const FLAG_HELP = 'help';
 
 /// Reads the |real name| <--> |platform id| mappings from the given file.
@@ -28,40 +33,76 @@ Future<Map<String, String>> _extractMappings(String fileName) async {
 
 main(List<String> args) async {
   final parser = new ArgParser()
-      ..addOption(OPTION_MAPPINGS, abbr: 'm')
-      ..addOption(OPTION_COMMUNITY_PAGE, abbr: 'c')
-      ..addOption(OPTION_API_KEY, abbr: 'a')
-      ..addFlag(FLAG_HELP, negatable: false, abbr: 'h');
+      ..addOption(OPTION_XBL_MAPPINGS)
+      ..addOption(OPTION_PSN_MAPPINGS)
+      ..addOption(OPTION_COMMUNITY_PAGE)
+      ..addOption(OPTION_GPLUS_API_KEY)
+      ..addOption(OPTION_DRIVE_ID)
+      ..addOption(OPTION_DRIVE_SECRET)
+      ..addOption(OPTION_BUNGIE_API_KEY)
+      ..addFlag(FLAG_HELP, negatable: false);
   var params = parser.parse(args);
   if (params[FLAG_HELP] ||
-        !params.options.contains(OPTION_MAPPINGS) ||
-        !params.options.contains(OPTION_COMMUNITY_PAGE)) {
+        !params.options.contains(OPTION_XBL_MAPPINGS) ||
+        !params.options.contains(OPTION_PSN_MAPPINGS) ||
+        !params.options.contains(OPTION_COMMUNITY_PAGE) ||
+        !params.options.contains(OPTION_GPLUS_API_KEY) ||
+        !params.options.contains(OPTION_DRIVE_ID) ||
+        !params.options.contains(OPTION_DRIVE_SECRET) ||
+        !params.options.contains(OPTION_BUNGIE_API_KEY)) {
     print(parser.usage);
     return;
   }
 
-  var mappings = await _extractMappings(params[OPTION_MAPPINGS]);
+  var xblMappings = await _extractMappings(params[OPTION_XBL_MAPPINGS]);
+  var psnMappings = await _extractMappings(params[OPTION_PSN_MAPPINGS]);
 
   var communityFile = params[OPTION_COMMUNITY_PAGE];
-  var apiKey = params[OPTION_API_KEY];
-  var allUsers = await getGplusUsers(communityFile, apiKey);
+  var gplusApiKey = params[OPTION_GPLUS_API_KEY];
+  var allUsers = await getGplusUsers(communityFile, gplusApiKey);
 
-  var knownUsers = allUsers.where((user) {
-    return mappings.containsKey(user.displayName);
-  }).toList()..sort((x, y) {
-    return x.displayName.compareTo(y.displayName);
-  });
-  print('Users whose platform id is known:');
-  knownUsers.forEach((user) => print(' - ${user}'));
-  print('${knownUsers.length} users.');
+  var bungieClient = new BungieClient(params[OPTION_BUNGIE_API_KEY]);
 
-  var notFound = mappings.keys.where((name) {
-    var found = allUsers.firstWhere((gUser) {
-      return gUser.displayName == name;
-    }, orElse: () => null);
-    return found == null;
+  List<User> users = new List();
+
+  await Future.forEach(allUsers, (user) async {
+    String platformId;
+    bool onXbox;
+    var name = user.displayName;
+    if (xblMappings.containsKey(name)) {
+      platformId = xblMappings[name];
+      onXbox = true;
+    } else if (psnMappings.containsKey(name)) {
+      platformId = psnMappings[name];
+      onXbox = false;
+    } else {
+      print('No gamertag for ${name}.');
+      return;
+    }
+    var destinyId = await bungieClient.getDestinyId(platformId, onXbox);
+    if (destinyId == null) {
+      print('Unable to find Destiny id for ${user} [${platformId}].');
+      return;
+    }
+    var bungieId = await bungieClient.getBungieId(destinyId, onXbox);
+    if (bungieId == null) {
+      print('Unable to find Bungie id for ${user} [${platformId}]');
+      return;
+    }
+    users.add(new User(user.id, platformId, onXbox, bungieId, destinyId));
   });
-  print('Mapped users not recognized in community:');
-  notFound.forEach((user) => print(' - ${user}'));
-  print('${notFound.length} users.');
+
+  var config = new Config(
+      params[OPTION_DRIVE_ID], params[OPTION_DRIVE_SECRET]);
+  var loader = new DatabaseLoader(config);
+  await loader.initialize();
+  Database db = await loader.load();
+  // Note: not touching the last update time: it will be set the first time the
+  // db is actually updated.
+  db.users.addAll(users);
+  await loader.save(db);
+  loader.destroy();
+
+  print(db);
+  print('Added ${users.length} users to the database.');
 }

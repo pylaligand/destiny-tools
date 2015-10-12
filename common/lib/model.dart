@@ -109,4 +109,8 @@ class User {
     result = 37 * result + destinyId.hashCode;
     return result;
   }
+
+  @override String toString() {
+    return new JsonEncoder.withIndent('  ').convert(toJson());
+  }
 }
