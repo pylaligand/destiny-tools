@@ -20,9 +20,9 @@ main(List<String> args) async {
       ..addFlag(FLAG_HELP, negatable: false);
   var params = parser.parse(args);
   if (params[FLAG_HELP] ||
-        !params.options.contains(OPTION_DRIVE_ID) ||
-        !params.options.contains(OPTION_DRIVE_SECRET) ||
-        !params.options.contains(OPTION_OUTPUT_FILE)) {
+      !params.options.contains(OPTION_DRIVE_ID) ||
+      !params.options.contains(OPTION_DRIVE_SECRET) ||
+      !params.options.contains(OPTION_OUTPUT_FILE)) {
     print(parser.usage);
     return;
   }
