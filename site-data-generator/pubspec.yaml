@@ -1,0 +1,7 @@
+name: destiny-site-data-generator
+version: 0.0.1
+description: Generates data snapshots for a website.
+dependencies:
+  args: any
+  destiny-common:
+    path: ../common
