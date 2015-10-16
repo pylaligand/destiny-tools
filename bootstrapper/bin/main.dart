@@ -96,7 +96,7 @@ main(List<String> args) async {
       params[OPTION_DRIVE_ID], params[OPTION_DRIVE_SECRET]);
   var loader = new DatabaseLoader(config);
   await loader.initialize();
-  Database db = await loader.load();
+  var db = new Database();
   // Note: not touching the last update time: it will be set the first time the
   // db is actually updated.
   db.users.addAll(users);
