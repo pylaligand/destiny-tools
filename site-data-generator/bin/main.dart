@@ -12,6 +12,16 @@ const OPTION_DRIVE_SECRET = 'drive_secret';
 const OPTION_OUTPUT_FILE = 'output_file';
 const FLAG_HELP = 'help';
 
+// Sorts a user list.
+// Currently uses platform ids.
+_sortUserList(List<User> users) {
+  users.sort((a, b) {
+    var comparable = (User user) => user.platformId.toLowerCase();
+    return comparable(a).compareTo(comparable(b));
+  });
+  return users;
+}
+
 main(List<String> args) async {
   final parser = new ArgParser()
       ..addOption(OPTION_DRIVE_ID)
@@ -33,8 +43,13 @@ main(List<String> args) async {
   await loader.initialize();
   Database db = await loader.load();
 
-  var xboxUsers = db.users.where((user) => user.onXbox).toList();
-  var data = new JsonEncoder.withIndent('  ').convert(xboxUsers);
+  var xblUsers = _sortUserList(db.users.where((user) => user.onXbox).toList());
+  var psnUsers = _sortUserList(db.users.where((user) => !user.onXbox).toList());
+  var model = {
+    'xblUsers': xblUsers,
+    'psnUsers': psnUsers,
+  };
+  var data = new JsonEncoder.withIndent('  ').convert(model);
   await new File(params[OPTION_OUTPUT_FILE]).writeAsString(data);
 
   loader.destroy();
