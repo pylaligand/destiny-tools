@@ -43,8 +43,10 @@ main(List<String> args) async {
   await loader.initialize();
   Database db = await loader.load();
 
-  var xblUsers = _sortUserList(db.users.where((user) => user.onXbox).toList());
-  var psnUsers = _sortUserList(db.users.where((user) => !user.onXbox).toList());
+  var xblUsers = _sortUserList(
+      db.users.where((user) => user.onXbox && !user.ignored).toList());
+  var psnUsers = _sortUserList(
+      db.users.where((user) => !user.onXbox && !user.ignored).toList());
   var model = {
     'xblUsers': xblUsers,
     'psnUsers': psnUsers,

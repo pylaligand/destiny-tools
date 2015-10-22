@@ -66,19 +66,23 @@ class User {
   final String bungieId;
   /// Destiny id.
   final String destinyId;
+  /// True if the user should not be listed.
+  final bool ignored;
 
   User(this.gplusId,
     this.platformId,
     this.onXbox,
     this.bungieId,
-    this.destinyId);
+    this.destinyId,
+    this.ignored);
 
   factory User.fromJson(Map values) {
     return new User(values['gplusId'],
         values['platformId'],
         values['onXbox'],
         values['bungieId'],
-        values['destinyId']);
+        values['destinyId'],
+        values['ignored']);
   }
 
   Map toJson() {
@@ -88,6 +92,7 @@ class User {
     result['onXbox'] = onXbox;
     result['bungieId'] = bungieId;
     result['destinyId'] = destinyId;
+    result['ignored'] = ignored == 'true';
     return result;
   }
 
@@ -97,7 +102,8 @@ class User {
         platformId == other.platformId &&
         onXbox == other.onXbox &&
         bungieId == other.bungieId &&
-        destinyId == other.destinyId;
+        destinyId == other.destinyId &&
+        ignored == other.ignored;
   }
 
   @override int get hashCode {
@@ -107,6 +113,7 @@ class User {
     result = 37 * result + onXbox.hashCode;
     result = 37 * result + bungieId.hashCode;
     result = 37 * result + destinyId.hashCode;
+    result = 37 * result + ignored.hashCode;
     return result;
   }
 
