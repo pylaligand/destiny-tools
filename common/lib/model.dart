@@ -73,11 +73,17 @@ class User {
     this.platformId,
     this.onXbox,
     this.bungieId,
+    this.destinyId) : ignored = false;
+
+  User._internal(this.gplusId,
+    this.platformId,
+    this.onXbox,
+    this.bungieId,
     this.destinyId,
     this.ignored);
 
   factory User.fromJson(Map values) {
-    return new User(values['gplusId'],
+    return new User._internal(values['gplusId'],
         values['platformId'],
         values['onXbox'],
         values['bungieId'],

@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:destiny-common/db.dart';
-import 'package:destiny-common/drive_connnection.dart';
+import 'package:destiny-common/drive_connection.dart';
 
 const OPTION_DRIVE_ID = 'drive_id';
 const OPTION_DRIVE_SECRET = 'drive_secret';

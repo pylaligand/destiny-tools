@@ -4,6 +4,7 @@ description: Common utilities for Destiny-related scripts.
 dependencies:
   args: any
   collection: any
+  csv: any
   googleapis: any
   googleapis_auth: any
   http: any
