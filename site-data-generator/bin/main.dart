@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:destiny-common/db.dart';
+import 'package:destiny-common/drive_connnection.dart';
 
 const OPTION_DRIVE_ID = 'drive_id';
 const OPTION_DRIVE_SECRET = 'drive_secret';
@@ -37,10 +38,10 @@ main(List<String> args) async {
     return;
   }
 
-  var config = new Config(
+  var connection = new DriveConnection(
       params[OPTION_DRIVE_ID], params[OPTION_DRIVE_SECRET]);
-  var loader = new DatabaseLoader(config);
-  await loader.initialize();
+  await connection.initialize();
+  var loader = new DatabaseLoader(connection);
   Database db = await loader.load();
 
   var xblUsers = _sortUserList(
@@ -54,5 +55,5 @@ main(List<String> args) async {
   var data = new JsonEncoder.withIndent('  ').convert(model);
   await new File(params[OPTION_OUTPUT_FILE]).writeAsString(data);
 
-  loader.destroy();
+  connection.destroy();
 }
