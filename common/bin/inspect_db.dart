@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:args/args.dart';
 import 'package:destiny-common/db.dart';
+import 'package:destiny-common/drive_connection.dart';
 
 const OPTION_CLIENT_ID = 'client_id';
 const OPTION_CLIENT_SECRET = 'client_secret';
@@ -22,11 +23,11 @@ main(List<String> args) async {
     return;
   }
 
-  var config = new Config(
+  var connection = new DriveConnection(
       params[OPTION_CLIENT_ID], params[OPTION_CLIENT_SECRET]);
-  var loader = new DatabaseLoader(config);
-  await loader.initialize();
+  await connection.initialize();
+  var loader = new DatabaseLoader(connection);
   var database = await loader.load();
   print(database);
-  loader.destroy();
+  connection.destroy();
 }

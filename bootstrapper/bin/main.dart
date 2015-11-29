@@ -7,6 +7,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:destiny-common/bungie.dart';
 import 'package:destiny-common/db.dart';
+import 'package:destiny-common/drive_connection.dart';
 import 'package:destiny-gplus/gplus.dart';
 
 const OPTION_XBL_MAPPINGS = 'xbl_mappings';
@@ -92,16 +93,16 @@ main(List<String> args) async {
     users.add(new User(user.id, platformId, onXbox, bungieId, destinyId));
   });
 
-  var config = new Config(
+  var connection = new DriveConnection(
       params[OPTION_DRIVE_ID], params[OPTION_DRIVE_SECRET]);
-  var loader = new DatabaseLoader(config);
-  await loader.initialize();
+  await connection.initialize();
+  var loader = new DatabaseLoader(connection);
   var db = new Database();
   // Note: not touching the last update time: it will be set the first time the
   // db is actually updated.
   db.users.addAll(users);
   await loader.save(db);
-  loader.destroy();
+  connection.destroy();
 
   print(db);
   print('Added ${users.length} users to the database.');
