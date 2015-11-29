@@ -15,6 +15,13 @@ class DriveConnection {
   http.Client _client;
   drive.DriveApi _api;
 
+  /// Constructor.
+  ///
+  /// See https://developers.google.com/identity/protocols/OAuth2 for details on
+  /// OAuth2 authentication parameters.
+  ///
+  /// [id] - client id.
+  /// [secret] - client secret.
   DriveConnection(this._id, this._secret);
 
   bool get isLoaded => _client != null;
