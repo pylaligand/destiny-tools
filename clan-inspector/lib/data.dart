@@ -41,7 +41,7 @@ class Member {
   DateTime get activeTime => _lastActiveDate;
            set activeTime(DateTime time) => _lastActiveDate = time.toLocal();
   /// Returns the user's grimoire score.
-  int get grimoireScore => _grimoireScore;
+  int get grimoireScore => _grimoireScore ?? 0;
       set grimoireScore(int score) => _grimoireScore = score;
   /// Returns the list of characters.
   List<Character> get characters => _characters;

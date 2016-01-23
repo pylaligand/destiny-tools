@@ -13,14 +13,14 @@ const OPTION_API_KEY = 'api_key';
 const FLAG_HELP = 'help';
 
 /// Prints a string representing the given time.
-_stringify(DateTime time) {
-  return new StringBuffer()
+String _stringify(DateTime time) {
+  var buffer = new StringBuffer()
       ..write(time.month)
       ..write('/')
       ..write(time.day)
       ..write('/')
-      ..write(time.year)
-      ..toString();
+      ..write(time.year);
+  return buffer.toString();
 }
 
 main(List<String> args) async {
@@ -64,14 +64,14 @@ main(List<String> args) async {
   });
 
   // Print the results in a table format.
-  final headers = 'Bungie username\t${forXbox ? 'XBL' : 'PSN'} username\tApproval day\tLast active day\tGrimoire';
+  final headers = 'Bungie username\t\t${forXbox ? 'XBL' : 'PSN'} username\t\tApproval\tLast active\tGrimoire\tCharacters';
   print(headers);
   roster.forEach((member) {
     var activeDay = member.activeTime != null
         ? _stringify(member.activeTime)
         : '?';
     var approvalDay = _stringify(member.approvalTime);
-    print('${member.userName}\t${member.consoleName}\t${approvalDay}\t${activeDay}\t${member.grimoireScore}\t${member.characters.length}');
+    print('${member.userName.padRight(20)}\t${member.consoleName.padRight(20)}\t${approvalDay}\t${activeDay.padRight(10)}\t${member.grimoireScore}\t\t${member.characters.length}');
   });
   print(headers);
   print('Found ${roster.length} users.');
