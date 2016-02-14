@@ -1,0 +1,7 @@
+name: xboxapi
+version: 0.0.1
+description: Talks to the xboxapi.com service.
+dependencies:
+  args: any
+  http: any
+  path: any
