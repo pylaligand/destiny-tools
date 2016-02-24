@@ -7,9 +7,11 @@ import 'package:googleapis/drive/v2.dart' as drive;
 import 'package:http/http.dart' as http;
 
 import 'drive_connection.dart';
+import 'form_data.dart';
+
+export 'form_data.dart';
 
 class FormLoader {
-
   static final _NUM_REGEX = new RegExp(r'^\d+$');
   static final _CUSTOM_REGEX = new RegExp(r'^\+\w+$');
 
@@ -23,7 +25,7 @@ class FormLoader {
   FormLoader(this._connection, this._formId);
 
   /// Loads the content of the form.
-  Future<List> load() async {
+  Future<List<Member>> load() async {
     drive.File file = await _connection.api.files.get(_formId);
     var content = await _connection.client.read(file.exportLinks['text/csv']);
     var codec = new CsvCodec(parseNumbers: false);
@@ -31,18 +33,14 @@ class FormLoader {
     // Remove the headers.
     list.removeAt(0);
     list.retainWhere(_validate);
-    return list;
+    return list.map((attributes) {
+      return new Member.fromRawData(attributes[1], attributes[2], attributes[3],
+          attributes[4], attributes[5]);
+    });
   }
 
   /// Returns |true| if the given entry contains valid data.
   bool _validate(List<String> user) {
-    // Platform.
-    const platforms = const ['Xbox', 'Playstation'];
-    var platform = user[1];
-    if (!platforms.contains(platform)) {
-      print('Invalid platform: ${platform}');
-      return false;
-    }
     // G+ id.
     var gplusId = user[3];
     if (_NUM_REGEX.firstMatch(gplusId) == null &&
