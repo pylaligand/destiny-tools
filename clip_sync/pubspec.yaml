@@ -1,0 +1,8 @@
+name: clip_sync
+version: 0.0.1
+description: Syncs Xbox Live clips to Google Drive.
+dependencies:
+  browser: any
+  chrome: any
+transformers:
+  - chrome
