@@ -22,8 +22,8 @@ Future<bool> save(String downloadUrl, String filePath) async {
       .then((HttpClientRequest request) => request.close());
   bool success = true;
   await response
-      .pipe(new File(filePath).openWrite()
-      .catchError(() => success = false));
+      .handleError((error) => success = false)
+      .pipe(new File(filePath).openWrite());
   return success;
 }
 
