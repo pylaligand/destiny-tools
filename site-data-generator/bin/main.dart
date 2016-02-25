@@ -47,10 +47,14 @@ main(List<String> args) async {
   var connection =
       new DriveConnection(params[OPTION_DRIVE_ID], params[OPTION_DRIVE_SECRET]);
   await connection.initialize();
-  final members =
+  final memberEntries =
       await new FormLoader(connection, params[OPTION_USER_FORM]).load();
 
-  final users = members.map((member) => new User(member));
+  final members = new Set<Member>();
+  // Remove duplicates, retaining the latest entry for a given player.
+  memberEntries.reversed.forEach((member) => members.add(member));
+
+  final users = members.map((member) => new User(member)).toList();
   var xblUsers = _sortUserList(users
       .where((user) => user.member.platform == data.Platform.Xbox)
       .toList());
