@@ -59,8 +59,28 @@ class Member {
     }
   }
 
-  @override String toString() {
+  @override
+  String toString() {
     final platformCode = platform == Platform.Xbox ? 'XBL' : 'PSN';
     return '${gamertag}[${platformCode}]';
+  }
+
+  @override
+  bool operator ==(dynamic other) {
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Member) {
+      return false;
+    }
+    return platform == other.platform && gamertag == other.gamertag;
+  }
+
+  @override
+  int get hashCode {
+    int result = 17;
+    result += 37 * platform.hashCode;
+    result += 37 * gamertag.hashCode;
+    return result;
   }
 }

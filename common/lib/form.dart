@@ -25,6 +25,8 @@ class FormLoader {
   FormLoader(this._connection, this._formId);
 
   /// Loads the content of the form.
+  ///
+  /// The list is chronologically ordered.
   Future<List<Member>> load() async {
     drive.File file = await _connection.api.files.get(_formId);
     var content = await _connection.client.read(file.exportLinks['text/csv']);
@@ -36,7 +38,7 @@ class FormLoader {
     return list.map((attributes) {
       return new Member.fromRawData(attributes[1], attributes[2], attributes[3],
           attributes[4], attributes[5]);
-    });
+    }).toList();
   }
 
   /// Returns |true| if the given entry contains valid data.
