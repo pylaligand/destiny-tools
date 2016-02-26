@@ -3,7 +3,6 @@
 library clan;
 
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:destiny-common/bungie.dart';
 
@@ -74,23 +73,32 @@ _addDestinyData(Member member, BungieClient client) async {
     member.characters.add(new Character(clazz, race, level, light));
   });
 }
- /// Creates a character class from its integer representation.
+
+/// Creates a character class from its integer representation.
 CharacterClass _classFromType(int type) {
   switch (type) {
-    case 0: return CharacterClass.titan;
-    case 1: return CharacterClass.hunter;
-    case 2: return CharacterClass.warlock;
-    default: throw new ArgumentError.value(type, 'class');
+    case 0:
+      return CharacterClass.titan;
+    case 1:
+      return CharacterClass.hunter;
+    case 2:
+      return CharacterClass.warlock;
+    default:
+      throw new ArgumentError.value(type, 'class');
   }
 }
 
 /// Creates a race from its integer representation.
 Race _raceFromType(int type) {
   switch (type) {
-    case 0: return Race.human;
-    case 1: return Race.awoken;
-    case 2: return Race.exo;
-    default: throw new ArgumentError.value(type, 'race');
+    case 0:
+      return Race.human;
+    case 1:
+      return Race.awoken;
+    case 2:
+      return Race.exo;
+    default:
+      throw new ArgumentError.value(type, 'race');
   }
 }
 
@@ -99,8 +107,7 @@ _addActivityData(Member member, BungieClient client, forXbox) async {
   await _addDestinyData(member, client);
 }
 
-Future<List<Member>> getClan(
-    String clanId, String apiKey, bool forXbox) async {
+Future<List<Member>> getClan(String clanId, String apiKey, bool forXbox) async {
   BungieClient client = new BungieClient(apiKey);
   List<Member> roster = await _getClanRoster(clanId, client, forXbox);
   var tasks = [];

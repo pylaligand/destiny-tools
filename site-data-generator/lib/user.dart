@@ -1,7 +1,5 @@
 // Copyright (c) 2016 P.Y. Laligand
 
-import 'dart:convert';
-
 import 'package:destiny-common/form_data.dart';
 
 /// Aggregated data about a user.
