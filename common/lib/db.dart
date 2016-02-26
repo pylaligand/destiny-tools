@@ -7,8 +7,6 @@ import 'dart:convert';
 
 import 'package:collection/equality.dart';
 import 'package:googleapis/drive/v2.dart' as drive;
-import 'package:googleapis_auth/auth_io.dart' as auth;
-import 'package:http/http.dart' as http;
 
 import 'drive_connection.dart';
 
@@ -16,7 +14,6 @@ part 'model.dart';
 
 /// Used to load a database from Google Drive.
 class DatabaseLoader {
-
   final DriveConnection _connection;
   final String folderName;
   final String fileName;
@@ -27,9 +24,8 @@ class DatabaseLoader {
   /// [folderName] - Name of the (existing) Drive folder where the database is
   /// stored.
   /// [fileName] - Name of the database file.
-  DatabaseLoader(this._connection, {
-      this.folderName: '',
-      this.fileName: 'destinydb.txt'});
+  DatabaseLoader(this._connection,
+      {this.folderName: '', this.fileName: 'destinydb.txt'});
 
   /// Loads the database from Drive.
   Future<Database> load() async {
@@ -43,8 +39,8 @@ class DatabaseLoader {
   save(Database db) async {
     drive.File file = await _getDatabaseFile();
     var content = _mediaFromDatabase(db);
-    await _connection.api.files.update(
-        file, file.id, uploadMedia: content, newRevision: true);
+    await _connection.api.files
+        .update(file, file.id, uploadMedia: content, newRevision: true);
   }
 
   /// Returns the database file, creating it if necessary.
@@ -62,7 +58,7 @@ class DatabaseLoader {
       if (folderList.items.isEmpty) {
         throw new StateError('Could not find folder "${folderName}"');
       }
-      folderId = folderList[0].fileId;
+      folderId = folderList.items[0].id;
     }
 
     // Find the file in the folder.

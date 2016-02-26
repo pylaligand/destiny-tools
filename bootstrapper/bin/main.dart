@@ -1,7 +1,6 @@
 // Copyright (c) 2015 P.Y. Laligand
 
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -34,23 +33,23 @@ Future<Map<String, String>> _extractMappings(String fileName) async {
 
 main(List<String> args) async {
   final parser = new ArgParser()
-      ..addOption(OPTION_XBL_MAPPINGS)
-      ..addOption(OPTION_PSN_MAPPINGS)
-      ..addOption(OPTION_COMMUNITY_PAGE)
-      ..addOption(OPTION_GPLUS_API_KEY)
-      ..addOption(OPTION_DRIVE_ID)
-      ..addOption(OPTION_DRIVE_SECRET)
-      ..addOption(OPTION_BUNGIE_API_KEY)
-      ..addFlag(FLAG_HELP, negatable: false);
+    ..addOption(OPTION_XBL_MAPPINGS)
+    ..addOption(OPTION_PSN_MAPPINGS)
+    ..addOption(OPTION_COMMUNITY_PAGE)
+    ..addOption(OPTION_GPLUS_API_KEY)
+    ..addOption(OPTION_DRIVE_ID)
+    ..addOption(OPTION_DRIVE_SECRET)
+    ..addOption(OPTION_BUNGIE_API_KEY)
+    ..addFlag(FLAG_HELP, negatable: false);
   var params = parser.parse(args);
   if (params[FLAG_HELP] ||
-        !params.options.contains(OPTION_XBL_MAPPINGS) ||
-        !params.options.contains(OPTION_PSN_MAPPINGS) ||
-        !params.options.contains(OPTION_COMMUNITY_PAGE) ||
-        !params.options.contains(OPTION_GPLUS_API_KEY) ||
-        !params.options.contains(OPTION_DRIVE_ID) ||
-        !params.options.contains(OPTION_DRIVE_SECRET) ||
-        !params.options.contains(OPTION_BUNGIE_API_KEY)) {
+      !params.options.contains(OPTION_XBL_MAPPINGS) ||
+      !params.options.contains(OPTION_PSN_MAPPINGS) ||
+      !params.options.contains(OPTION_COMMUNITY_PAGE) ||
+      !params.options.contains(OPTION_GPLUS_API_KEY) ||
+      !params.options.contains(OPTION_DRIVE_ID) ||
+      !params.options.contains(OPTION_DRIVE_SECRET) ||
+      !params.options.contains(OPTION_BUNGIE_API_KEY)) {
     print(parser.usage);
     return;
   }
@@ -93,8 +92,8 @@ main(List<String> args) async {
     users.add(new User(user.id, platformId, onXbox, bungieId, destinyId));
   });
 
-  var connection = new DriveConnection(
-      params[OPTION_DRIVE_ID], params[OPTION_DRIVE_SECRET]);
+  var connection =
+      new DriveConnection(params[OPTION_DRIVE_ID], params[OPTION_DRIVE_SECRET]);
   await connection.initialize();
   var loader = new DatabaseLoader(connection);
   var db = new Database();

@@ -37,6 +37,8 @@ class Member {
         return Platform.Xbox;
       case 'Playstation':
         return Platform.Playstation;
+      default:
+        throw 'Unknown platform $rawPlatform';
     }
   }
 
@@ -56,6 +58,8 @@ class Member {
         return Timezone.Paris;
       case 'Other':
         return Timezone.Other;
+      default:
+        throw 'Unknown timezone $rawTimezone';
     }
   }
 

@@ -1,8 +1,5 @@
 // Copyright (c) 2015 P.Y. Laligand
 
-import 'dart:async';
-import 'dart:io';
-
 import 'package:args/args.dart';
 import 'package:destiny-gplus/gplus.dart';
 
@@ -13,10 +10,10 @@ const FLAG_HELP = 'help';
 
 main(List<String> args) async {
   final parser = new ArgParser()
-      ..addOption(OPTION_COMMUNITY_PAGE, abbr: 'c')
-      ..addOption(OPTION_API_KEY, abbr: 'a')
-      ..addOption(OPTION_MAX_USERS, abbr: 'm', defaultsTo: '0')
-      ..addFlag(FLAG_HELP, negatable: false, abbr: 'h');
+    ..addOption(OPTION_COMMUNITY_PAGE, abbr: 'c')
+    ..addOption(OPTION_API_KEY, abbr: 'a')
+    ..addOption(OPTION_MAX_USERS, abbr: 'm', defaultsTo: '0')
+    ..addFlag(FLAG_HELP, negatable: false, abbr: 'h');
   var params = parser.parse(args);
   if (params[FLAG_HELP] ||
       !params.options.contains(OPTION_COMMUNITY_PAGE) ||
