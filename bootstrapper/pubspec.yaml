@@ -1,9 +1,9 @@
-name: destiny-bootstrapper
+name: destiny_bootstrapper
 version: 0.0.1
 description: Used to bootstrap a database with existing data.
 dependencies:
   args: any
-  destiny-common:
+  destiny_common:
     path: ../common
-  destiny-gplus:
+  destiny_gplus:
     path: ../gplus

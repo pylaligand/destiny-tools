@@ -1,8 +1,8 @@
 // Copyright (c) 2015 P.Y. Laligand
 
 import 'package:args/args.dart';
-import 'package:destiny-common/drive_connection.dart';
-import 'package:destiny-common/form.dart';
+import 'package:destiny_common/drive_connection.dart';
+import 'package:destiny_common/form.dart';
 
 const OPTION_CLIENT_ID = 'client_id';
 const OPTION_CLIENT_SECRET = 'client_secret';

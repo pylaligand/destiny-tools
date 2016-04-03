@@ -2,7 +2,7 @@
 
 library model_test;
 
-import 'package:destiny-common/db.dart';
+import 'package:destiny_common/db.dart';
 import 'package:test/test.dart';
 
 main() {

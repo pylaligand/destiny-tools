@@ -1,4 +1,4 @@
-name: destiny-common
+name: destiny_common
 version: 0.0.1
 description: Common utilities for Destiny-related scripts.
 dependencies:

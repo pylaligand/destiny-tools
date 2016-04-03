@@ -1,7 +1,7 @@
-name: destiny-clan
+name: destiny_clan
 version: 0.0.1
 description: Manage the roster of a Bungie clan.
 dependencies:
   args: any
-  destiny-common:
+  destiny_common:
     path: ../common
