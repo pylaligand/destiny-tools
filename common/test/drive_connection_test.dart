@@ -2,7 +2,7 @@
 
 library db_test;
 
-import 'package:destiny-common/drive_connection.dart';
+import 'package:destiny_common/drive_connection.dart';
 import 'package:test/test.dart';
 
 main() {
