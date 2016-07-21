@@ -1,7 +1,8 @@
 // Copyright (c) 2015 P.Y. Laligand
 
 import 'package:args/args.dart';
-import 'package:destiny-clan/clan.dart';
+
+import '../lib//clan.dart';
 
 const OPTION_PLATFORM = 'platform';
 const VALUE_XBL = 'xbl';
@@ -12,7 +13,7 @@ const FLAG_HELP = 'help';
 
 /// Prints a string representing the given time.
 String _stringify(DateTime time) {
-  var buffer = new StringBuffer()
+  final buffer = new StringBuffer()
     ..write(time.month)
     ..write('/')
     ..write(time.day)
@@ -27,7 +28,7 @@ main(List<String> args) async {
     ..addOption(OPTION_CLAN_ID, abbr: 'c')
     ..addOption(OPTION_API_KEY, abbr: 'a')
     ..addFlag(FLAG_HELP, negatable: false, abbr: 'h');
-  var params = parser.parse(args);
+  final params = parser.parse(args);
   if (params[FLAG_HELP] ||
       !params.options.contains(OPTION_PLATFORM) ||
       !params.options.contains(OPTION_API_KEY)) {
@@ -40,7 +41,7 @@ main(List<String> args) async {
   final apiKey = params[OPTION_API_KEY];
 
   print('Fetching the list...');
-  var roster = await getClan(clanId, apiKey, forXbox);
+  final roster = await getClan(clanId, apiKey, forXbox);
 
   // Sort the roster.
   // 1- no Destiny info, sorted by approval date.
@@ -56,21 +57,20 @@ main(List<String> args) async {
       if (b.playsDestiny) {
         return -1;
       } else {
-        return a.approvalTime.compareTo(b.approvalTime);
+        return 0;
       }
     }
   });
 
   // Print the results in a table format.
   final headers =
-      'Bungie username\t\t${forXbox ? 'XBL' : 'PSN'} username\t\tApproval\tLast active\tGrimoire\tCharacters';
+      'Bungie username\t\t${forXbox ? 'XBL' : 'PSN'} username\t\tLast active\tGrimoire\tCharacters';
   print(headers);
   roster.forEach((member) {
-    var activeDay =
+    final activeDay =
         member.activeTime != null ? _stringify(member.activeTime) : '?';
-    var approvalDay = _stringify(member.approvalTime);
     print(
-        '${member.userName.padRight(20)}\t${member.consoleName.padRight(20)}\t${approvalDay}\t${activeDay.padRight(10)}\t${member.grimoireScore}\t\t${member.characters.length}');
+        '${member.userName.padRight(20)}\t${member.consoleName.padRight(20)}\t${activeDay.padRight(10)}\t${member.grimoireScore}\t\t${member.characters.length}');
   });
   print(headers);
   print('Found ${roster.length} users.');

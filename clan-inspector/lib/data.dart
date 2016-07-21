@@ -4,66 +4,60 @@ part of clan;
 
 /// Represents a clan member.
 class Member {
-
   final String _username;
   final String _bungieId;
   final String _consoleName;
-  final DateTime _approvalDate;
   final List<Character> _characters;
 
   String _membershipId;
   DateTime _lastActiveDate;
   int _grimoireScore;
 
-  Member(this._username, String memberId, this._consoleName, DateTime approvalDate) :
-      _characters = new List(),
-      _bungieId = memberId,
-      _approvalDate = approvalDate.toLocal(),
-      _membershipId = '';
+  Member(this._username, String memberId, this._consoleName)
+      : _characters = new List(),
+        _bungieId = memberId,
+        _membershipId = '';
 
-  toString() => '${_username}\t[${_consoleName}]\t[${_membershipId}]\t[${_approvalDate}]\t[${_lastActiveDate}]';
+  toString() =>
+      '${_username} [${_consoleName}] [${_membershipId}] [${_lastActiveDate}]';
 
   /// Returns the member's Bungie username.
   String get userName => _username;
+
   /// Returns the username of the member on their gaming platform, or |?| if not
   /// available.
   String get consoleName => _consoleName != null ? _consoleName : '?';
-  /// Returns the date when the member was added to the clan.
-  DateTime get approvalTime => _approvalDate;
+
   /// Returns the member's Bungie id.
   String get bungieId => _bungieId;
+
   /// Returns the member's Destiny id.
   String get destinyId => _membershipId;
-         set destinyId(String id) => _membershipId = id;
+  set destinyId(String id) => _membershipId = id;
+
   /// Returns |true| if the member has a known Destiny id.
   bool get playsDestiny => _membershipId.isNotEmpty;
+
   /// Returns the last date the member was active in Destiny.
   DateTime get activeTime => _lastActiveDate;
-           set activeTime(DateTime time) => _lastActiveDate = time.toLocal();
+  set activeTime(DateTime time) => _lastActiveDate = time.toLocal();
+
   /// Returns the user's grimoire score.
   int get grimoireScore => _grimoireScore ?? 0;
-      set grimoireScore(int score) => _grimoireScore = score;
+  set grimoireScore(int score) => _grimoireScore = score;
+
   /// Returns the list of characters.
   List<Character> get characters => _characters;
 }
 
 /// Character classes.
-enum CharacterClass {
-  hunter,
-  titan,
-  warlock,
-}
+enum CharacterClass { hunter, titan, warlock, }
 
 /// Character races.
-enum Race {
-  awoken,
-  exo,
-  human,
-}
+enum Race { awoken, exo, human, }
 
 /// Represents an instance of a character.
 class Character {
-
   final CharacterClass characterClass;
   final Race race;
   final int level;

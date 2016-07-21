@@ -4,7 +4,7 @@ library clan;
 
 import 'dart:async';
 
-import 'package:destiny-common/bungie.dart';
+import 'package:destiny_common/bungie.dart';
 
 part 'data.dart';
 
@@ -14,7 +14,7 @@ Future<List<Member>> _getClanRoster(
   int pageIndex = 1;
   final List<Member> roster = new List();
   while (true) {
-    var data = await client.getClan(clanId, forXbox, pageIndex);
+    final data = await client.getClan(clanId, forXbox, pageIndex);
     if (_extractMembers(data, roster, forXbox)) {
       pageIndex++;
     } else {
@@ -26,36 +26,37 @@ Future<List<Member>> _getClanRoster(
 
 /// Extracts the users from the given data.
 /// Returns |true| if more users are available.
-bool _extractMembers(var data, List<Member> roster, bool forXbox) {
+bool _extractMembers(dynamic data, List<Member> roster, bool forXbox) {
   data['Response']['results'].forEach((user) {
-    var userData = user['user'];
-    var username = userData['displayName'];
-    var memberId = userData['membershipId'];
-    var consoleKey = forXbox ? 'xboxDisplayName' : 'psnDisplayName';
-    var consoleName = userData[consoleKey];
-    var approvalDate = DateTime.parse(user['approvalDate']);
-    var member = new Member(username, memberId, consoleName, approvalDate);
+    final userData = user['user'];
+    final username = userData['displayName'];
+    final memberId = userData['membershipId'];
+    final consoleKey = forXbox ? 'xboxDisplayName' : 'psnDisplayName';
+    final consoleName = userData[consoleKey];
+    final member = new Member(username, memberId, consoleName);
     roster.add(member);
   });
-  var total = data['Response']['totalResults'];
-  return roster.length < int.parse(total);
+  return roster.length < data['Response']['totalResults'];
 }
 
 /// Gathers some data from the Destiny account of the given user, if applicable.
 _addDestinyData(Member member, BungieClient client) async {
-  var data = await client.getBungieAccount(member.bungieId);
-  var accounts = data['Response']['destinyAccounts'];
+  if (member.bungieId == null || member.bungieId == '0') {
+    return;
+  }
+  final data = await client.getBungieAccount(member.bungieId);
+  final accounts = data['Response']['destinyAccounts'];
   if (accounts.isEmpty) {
     return;
   }
-  var account = accounts[0];
+  final account = accounts[0];
   member.destinyId = account['userInfo']['membershipId'];
 
-  var characters = account['characters'];
+  final characters = account['characters'];
 
   // Last played date.
-  var playTime = characters.fold(new DateTime(1900), (time, character) {
-    var lastPlayTime = DateTime.parse(character['dateLastPlayed']);
+  final playTime = characters.fold(new DateTime(1900), (time, character) {
+    final lastPlayTime = DateTime.parse(character['dateLastPlayed']);
     return lastPlayTime.compareTo(time) > 0 ? lastPlayTime : time;
   });
   member.activeTime = playTime;
@@ -110,7 +111,7 @@ _addActivityData(Member member, BungieClient client, forXbox) async {
 Future<List<Member>> getClan(String clanId, String apiKey, bool forXbox) async {
   BungieClient client = new BungieClient(apiKey);
   List<Member> roster = await _getClanRoster(clanId, client, forXbox);
-  var tasks = [];
+  final tasks = [];
   roster.forEach((member) {
     tasks.add(_addActivityData(member, client, forXbox));
   });
