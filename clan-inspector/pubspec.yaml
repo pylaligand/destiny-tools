@@ -2,6 +2,8 @@ name: destiny_clan
 version: 0.0.1
 description: Manage the roster of a Bungie clan.
 dependencies:
-  args: any
-  destiny_common:
-    path: ../common
+  args: ^0.13.4
+  bungie_client:
+    git:
+      url: https://github.com/pylaligand/dart-bungie-client.git
+      ref: master

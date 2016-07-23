@@ -1,8 +1,9 @@
 // Copyright (c) 2015 P.Y. Laligand
 
-import 'package:args/args.dart';
+import 'dart:async';
 
-import '../lib//clan.dart';
+import 'package:args/args.dart';
+import 'package:bungie_client/bungie_client.dart';
 
 const OPTION_PLATFORM = 'platform';
 const VALUE_XBL = 'xbl';
@@ -10,6 +11,25 @@ const VALUE_PSN = 'psn';
 const OPTION_CLAN_ID = 'clan_id';
 const OPTION_API_KEY = 'api_key';
 const FLAG_HELP = 'help';
+
+/// Describes a member of the clan and their account data.
+class Player {
+  final ClanMember membership;
+  final Profile data;
+
+  const Player(this.membership, this.data);
+}
+
+/// Fetches clan members and their data.
+Future<List<Player>> _getClan(
+    String clanId, String apiKey, bool forXbox) async {
+  BungieClient client = new BungieClient(apiKey);
+  final roster = await client.getClanRoster(clanId, forXbox);
+  return Future.wait(roster.map((member) async {
+    final profile = await client.getPlayerProfile(member.id);
+    return new Player(member, profile);
+  }));
+}
 
 /// Prints a string representing the given time.
 String _stringify(DateTime time) {
@@ -41,36 +61,23 @@ main(List<String> args) async {
   final apiKey = params[OPTION_API_KEY];
 
   print('Fetching the list...');
-  final roster = await getClan(clanId, apiKey, forXbox);
+  final roster = await _getClan(clanId, apiKey, forXbox);
 
   // Sort the roster.
-  // 1- no Destiny info, sorted by approval date.
-  // 2- Destiny info, sorted by last played date.
-  roster.sort((a, b) {
-    if (a.playsDestiny) {
-      if (b.playsDestiny) {
-        return a.activeTime.compareTo(b.activeTime);
-      } else {
-        return 1;
-      }
-    } else {
-      if (b.playsDestiny) {
-        return -1;
-      } else {
-        return 0;
-      }
-    }
-  });
+  roster.sort((a, b) => a.data.lastPlayedCharacter.lastPlayed
+      .compareTo(b.data.lastPlayedCharacter.lastPlayed));
 
   // Print the results in a table format.
-  final headers =
-      'Bungie username\t\t${forXbox ? 'XBL' : 'PSN'} username\t\tLast active\tGrimoire\tCharacters';
+  final headers = 'Username\t\tLast active\tGrimoire\tCharacters';
   print(headers);
   roster.forEach((member) {
+    final activeTime = member.data.lastPlayedCharacter.lastPlayed;
     final activeDay =
-        member.activeTime != null ? _stringify(member.activeTime) : '?';
-    print(
-        '${member.userName.padRight(20)}\t${member.consoleName.padRight(20)}\t${activeDay.padRight(10)}\t${member.grimoireScore}\t\t${member.characters.length}');
+        (activeTime != null ? _stringify(activeTime) : '?').padRight(10);
+    final gamertag = member.membership.gamertag.padRight(20);
+    final grimoire = member.data.grimoire;
+    final characterCount = member.data.characterCount;
+    print('$gamertag\t$activeDay\t$grimoire\t\t$characterCount');
   });
   print(headers);
   print('Found ${roster.length} users.');
